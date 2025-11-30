@@ -53,19 +53,19 @@ public class BulkProductController {
                 String originalName = file.getOriginalFilename();
                 Map<String, Object> meta = metaMap.get(originalName);
 
-                Product p = new Product();
-                p.setName(meta != null ? meta.get("name").toString() : originalName);
-                p.setSku(meta != null ? Objects.toString(meta.get("sku"), null) : null);
-                p.setDescription(meta != null ? Objects.toString(meta.get("description"), null) : null);
+                Product product = new Product();
+                product.setName(meta != null ? meta.get("name").toString() : originalName);
+                product.setSku(meta != null ? Objects.toString(meta.get("sku"), null) : null);
+                product.setDescription(meta != null ? Objects.toString(meta.get("description"), null) : null);
 
                 if (meta != null && meta.get("price") != null) {
                     try {
-                        p.setPrice(Double.valueOf(meta.get("price").toString()));
+                        product.setPrice(Double.valueOf(meta.get("price").toString()));
                     } catch (Exception ignored) {}
                 }
 
-                // Save DB to generate UUID
-                Product created = repo.save(p);
+                // Save to DB to generate UUID
+                Product created = repo.save(product);
 
                 // Save to disk
                 String savedFile = storage.storeImage(created, file);
