@@ -1,9 +1,11 @@
 package com.tryneweveryweek.bulkupload.controller;
 
+import com.tryneweveryweek.bulkupload.dto.ProductResponseDto;
 import com.tryneweveryweek.bulkupload.model.Product;
 import com.tryneweveryweek.bulkupload.service.ProductService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.List;
 
@@ -22,37 +24,22 @@ public class ProductController {
         return ResponseEntity.ok("pong");
     }
 
-    @PostMapping
-    public ResponseEntity<Product> create(@RequestBody Product product) {
-        Product saved = service.create(product);
-        return ResponseEntity.status(201).body(saved);
-    }
-
     @GetMapping
-    public ResponseEntity<List<Product>> list() {
-        return ResponseEntity.ok(service.listAll());
-    }
+    public ResponseEntity<List<ProductResponseDto>> list() {
+        List<Product> products = service.getAllProducts();
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Product> get(@PathVariable String id) {
-        return service.findById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
+        List<ProductResponseDto> response = products.stream().map(prod -> {
+            String url = null;
+            if (prod.getImageFileName() != null) {
+                url = ServletUriComponentsBuilder.fromCurrentContextPath()
+                        .path("/uploads/")
+                        .path(prod.getId() + "/")
+                        .path(prod.getImageFileName())
+                        .toUriString();
+            }
+            return new ProductResponseDto(prod, url);
+        }).toList();
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Product> update(@PathVariable String id, @RequestBody Product p) {
-        try {
-            Product updated = service.update(id, p);
-            return ResponseEntity.ok(updated);
-        } catch (RuntimeException ex) {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable String id) {
-        service.delete(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(response);
     }
 }
