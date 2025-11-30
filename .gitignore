@@ -1,0 +1,9 @@
+/target
+/.idea
+/.vscode
+/.classpath
+/.project
+/.settings
+uploads/
+product-storage/
+*.log
